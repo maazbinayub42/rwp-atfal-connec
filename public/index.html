@@ -3,79 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RWP Atfal Connect | Chat & Media</title>
+    <title>WhatsApp Pro | RWP Atfal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #020617; color: white; overflow: hidden; }
-        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .chat-area { height: calc(100vh - 160px); }
-        
-        .msg-bubble {
-            max-width: 80%;
-            padding: 10px 14px;
-            border-radius: 18px;
-            margin-bottom: 4px;
-            position: relative;
-            animation: fadeIn 0.2s ease;
-        }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .sent { background: #4f46e5; align-self: flex-end; border-bottom-right-radius: 4px; color: white; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #0f172a; color: white; overflow: hidden; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+        .sidebar { width: 320px; border-right: 1px solid rgba(255, 255, 255, 0.1); }
+        .chat-area { flex: 1; display: flex; flex-direction: column; }
+        .msg-bubble { max-width: 75%; padding: 10px 14px; border-radius: 18px; position: relative; animation: fadeIn 0.2s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; } }
+        .sent { background: #4f46e5; align-self: flex-end; border-bottom-right-radius: 4px; }
         .received { background: #1e293b; align-self: flex-start; border-bottom-left-radius: 4px; }
-        .time { font-size: 9px; opacity: 0.6; margin-top: 4px; text-align: right; }
-        
-        /* Image styling in chat */
-        .chat-img { border-radius: 12px; max-width: 100%; margin-top: 5px; cursor: pointer; transition: 0.2s; }
-        .chat-img:hover { opacity: 0.9; }
+        .user-card:hover { background: rgba(255,255,255,0.05); }
+        .active-user { background: rgba(79, 70, 229, 0.2); border-left: 4px solid #4f46e5; }
+        .chat-img { border-radius: 12px; max-width: 100%; margin-top: 5px; }
     </style>
 </head>
-<body class="h-screen flex flex-col">
+<body class="h-screen flex flex-col md:flex-row">
 
     <!-- Login Screen -->
-    <div id="login-screen" class="flex flex-col items-center justify-center h-full px-4">
-        <div class="glass p-10 rounded-[32px] text-center max-w-sm w-full shadow-2xl">
-            <div class="text-5xl mb-6">🚀</div>
-            <h1 class="text-3xl font-bold mb-2 tracking-tight">RWP Atfal Connect</h1>
-            <p class="text-slate-400 mb-8">Share messages and photos with the crew.</p>
-            <button onclick="signIn()" class="w-full bg-white text-black font-bold py-4 px-6 rounded-2xl flex items-center justify-center gap-3 hover:bg-slate-200 transition-all active:scale-95">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20">
-                Sign in with Google
+    <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950 px-4">
+        <div class="bg-slate-900 p-10 rounded-[32px] text-center max-w-sm w-full shadow-2xl border border-slate-800">
+            <div class="text-6xl mb-6">💬</div>
+            <h1 class="text-3xl font-bold mb-2">Atfal Connect Pro</h1>
+            <p class="text-slate-400 mb-8">Login to start private messaging.</p>
+            <button onclick="signIn()" class="w-full bg-white text-black font-bold py-4 rounded-2xl flex items-center justify-center gap-3 hover:bg-slate-200 transition-all">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20"> Sign in with Google
             </button>
         </div>
     </div>
 
-    <!-- Main Chat App -->
-    <div id="chat-app" class="hidden flex flex-col h-full">
-        <header class="p-4 glass flex justify-between items-center px-6">
-            <div class="flex items-center gap-3">
-                <img id="user-img" class="w-10 h-10 rounded-full border-2 border-indigo-500">
-                <div>
-                    <h2 id="user-name" class="font-bold text-sm"></h2>
-                    <p id="status" class="text-[10px] text-green-400 font-bold uppercase tracking-wider">Online</p>
-                </div>
+    <!-- Sidebar (User List) -->
+    <div id="sidebar" class="sidebar hidden md:flex flex-col h-full bg-slate-900">
+        <div class="p-6 glass flex justify-between items-center">
+            <img id="my-img" class="w-10 h-10 rounded-full border-2 border-indigo-500">
+            <h2 class="font-bold">Chats</h2>
+            <button onclick="signOutUser()" class="text-slate-400 hover:text-red-400">Logout</button>
+        </div>
+        <div id="user-list" class="flex-1 overflow-y-auto p-2 space-y-1">
+            <div onclick="selectChat('global')" class="user-card active-user p-4 rounded-2xl cursor-pointer flex items-center gap-3">
+                <div class="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-xl">🌎</div>
+                <div><h3 class="font-bold text-sm">Global Group</h3><p class="text-xs text-slate-400">Public Room</p></div>
             </div>
-            <button onclick="signOutUser()" class="text-slate-400 hover:text-red-400 p-2">
-                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
-            </button>
+            <!-- Users will appear here -->
+        </div>
+    </div>
+
+    <!-- Main Chat -->
+    <div id="chat-app" class="chat-area hidden bg-slate-950">
+        <header id="chat-header" class="p-4 glass flex items-center gap-4 px-6">
+            <div class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center" id="header-img">🌎</div>
+            <div>
+                <h2 id="chat-title" class="font-bold text-sm">Global Group</h2>
+                <p id="chat-status" class="text-[10px] text-green-400 font-bold uppercase">Online</p>
+            </div>
         </header>
 
-        <!-- Messages -->
-        <div id="messages" class="chat-area overflow-y-auto p-4 flex flex-col space-y-3"></div>
+        <div id="messages" class="flex-1 overflow-y-auto p-4 flex flex-col space-y-4"></div>
 
-        <!-- Input Area -->
-        <div class="p-4 bg-slate-900/80 backdrop-blur-lg">
-            <form id="chat-form" class="max-w-4xl mx-auto flex gap-2 items-center">
-                <!-- Camera Button for Image Jugar -->
-                <label class="cursor-pointer p-2 text-slate-400 hover:text-indigo-400 transition-all">
+        <!-- Input -->
+        <div class="p-4 bg-slate-900/50">
+            <form id="chat-form" class="max-w-4xl mx-auto flex gap-3 items-center">
+                <label class="cursor-pointer text-slate-400 hover:text-indigo-400">
                     <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
                     <input type="file" id="img-input" class="hidden" accept="image/*">
                 </label>
-
-                <input type="text" id="msg-input" autocomplete="off" placeholder="Type a message..." 
-                    class="flex-1 bg-slate-800 border border-slate-700 rounded-full px-5 py-3 focus:outline-none focus:border-indigo-500 text-white">
-                
-                <button type="submit" class="bg-indigo-600 p-3 rounded-full shadow-lg hover:bg-indigo-500 transition-all active:scale-90">
+                <input type="text" id="msg-input" autocomplete="off" placeholder="Message..." 
+                    class="flex-1 bg-slate-800 border-none rounded-full px-6 py-3 focus:ring-2 focus:ring-indigo-500 text-white">
+                <button type="submit" class="bg-indigo-600 p-3 rounded-full hover:bg-indigo-500">
                     <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
                 </button>
             </form>
@@ -85,7 +81,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDote5FMt2LXfDZNsF9VyTU0rtMSrKXC4U",
@@ -96,107 +92,131 @@
             appId: "1:215469253347:web:8f078c23e1b7a2a1de5bd6"
         };
 
-        const IMGBB_API_KEY = "dd2e0f329b635e741a0c1a0bccfcb022";
-
+        const IMGBB_KEY = "dd2e0f329b635e741a0c1a0bccfcb022";
         const app = initializeApp(firebaseConfig);
         const auth = getAuth();
         const db = getFirestore();
         const provider = new GoogleAuthProvider();
 
+        let currentRoom = 'global';
+        let unsubscribe = null;
+
         window.signIn = () => signInWithPopup(auth, provider);
         window.signOutUser = () => signOut(auth);
 
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
                 document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('sidebar').classList.remove('hidden');
                 document.getElementById('chat-app').classList.remove('hidden');
-                document.getElementById('user-name').innerText = user.displayName;
-                document.getElementById('user-img').src = user.photoURL;
-                loadMessages();
+                document.getElementById('my-img').src = user.photoURL;
+
+                // User save in DB
+                await setDoc(doc(db, "users", user.uid), {
+                    name: user.displayName,
+                    photo: user.photoURL,
+                    uid: user.uid,
+                    online: true
+                }, { merge: true });
+
+                loadUsers();
+                selectChat('global');
             } else {
                 document.getElementById('login-screen').classList.remove('hidden');
-                document.getElementById('chat-app').classList.add('hidden');
             }
         });
 
-        // Text Message Send
+        // Load Sidebar Users
+        function loadUsers() {
+            onSnapshot(collection(db, "users"), (snap) => {
+                const list = document.getElementById('user-list');
+                list.innerHTML = `<div onclick="selectChat('global')" class="user-card p-4 rounded-2xl cursor-pointer flex items-center gap-3 ${currentRoom==='global'?'active-user':''}">
+                    <div class="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-xl">🌎</div>
+                    <div><h3 class="font-bold text-sm">Global Group</h3></div>
+                </div>`;
+                
+                snap.forEach(doc => {
+                    const u = doc.data();
+                    if(u.uid === auth.currentUser.uid) return;
+                    list.innerHTML += `
+                        <div onclick="selectChat('${u.uid}', '${u.name}', '${u.photo}')" class="user-card p-4 rounded-2xl cursor-pointer flex items-center gap-3 ${currentRoom.includes(u.uid)?'active-user':''}">
+                            <img src="${u.photo}" class="w-12 h-12 rounded-full border border-slate-700">
+                            <div><h3 class="font-bold text-sm">${u.name}</h3><p class="text-[10px] text-green-500 font-bold">ONLINE</p></div>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        window.selectChat = (targetID, name = "Global Group", photo = "") => {
+            currentRoom = targetID === 'global' ? 'global' : [auth.currentUser.uid, targetID].sort().join('_');
+            document.getElementById('chat-title').innerText = name;
+            document.getElementById('header-img').innerHTML = photo ? `<img src="${photo}" class="w-10 h-10 rounded-full">` : '🌎';
+            loadMessages();
+        };
+
+        // Text Send
         document.getElementById('chat-form').onsubmit = async (e) => {
             e.preventDefault();
             const input = document.getElementById('msg-input');
-            const text = input.value.trim();
-            if(!text) return;
+            if(!input.value.trim()) return;
 
-            await addDoc(collection(db, "chats"), {
-                text: text,
+            await addDoc(collection(db, "messages"), {
+                room: currentRoom,
+                text: input.value,
+                sender: auth.currentUser.uid,
                 name: auth.currentUser.displayName,
-                uid: auth.currentUser.uid,
                 photo: auth.currentUser.photoURL,
                 timestamp: serverTimestamp()
             });
             input.value = '';
         };
 
-        // Image Jugar Upload
+        // Image Jugar
         document.getElementById('img-input').onchange = async (e) => {
             const file = e.target.files[0];
             if(!file) return;
-
-            document.getElementById('status').innerText = "Uploading Image...";
-            document.getElementById('status').classList.replace('text-green-400', 'text-yellow-400');
-
+            document.getElementById('chat-status').innerText = "Uploading Media...";
             const formData = new FormData();
             formData.append('image', file);
-
-            try {
-                const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-                    method: 'POST',
-                    body: formData
-                });
-                const json = await res.json();
-                
-                await addDoc(collection(db, "chats"), {
-                    image: json.data.url,
-                    name: auth.currentUser.displayName,
-                    uid: auth.currentUser.uid,
-                    photo: auth.currentUser.photoURL,
-                    timestamp: serverTimestamp()
-                });
-                
-                document.getElementById('status').innerText = "Online";
-                document.getElementById('status').classList.replace('text-yellow-400', 'text-green-400');
-            } catch (err) {
-                alert("Upload fail! Dobara koshish karein.");
-            }
+            const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, { method:'POST', body: formData });
+            const json = await res.json();
+            
+            await addDoc(collection(db, "messages"), {
+                room: currentRoom,
+                image: json.data.url,
+                sender: auth.currentUser.uid,
+                name: auth.currentUser.displayName,
+                photo: auth.currentUser.photoURL,
+                timestamp: serverTimestamp()
+            });
+            document.getElementById('chat-status').innerText = "Online";
         };
 
         function loadMessages() {
-            const q = query(collection(db, "chats"), orderBy("timestamp", "asc"));
-            onSnapshot(q, (snapshot) => {
-                const messagesDiv = document.getElementById('messages');
-                messagesDiv.innerHTML = '';
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    const isMe = data.uid === auth.currentUser.uid;
-                    const time = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '...';
-
-                    const msgContent = data.image 
-                        ? `<img src="${data.image}" class="chat-img" onclick="window.open('${data.image}')">` 
-                        : `<p class="text-sm leading-relaxed">${data.text}</p>`;
-
-                    const msgWrapper = document.createElement('div');
-                    msgWrapper.className = `flex gap-2 ${isMe ? 'flex-row-reverse' : 'flex-row'}`;
+            if(unsubscribe) unsubscribe();
+            const q = query(collection(db, "messages"), where("room", "==", currentRoom), orderBy("timestamp", "asc"));
+            
+            unsubscribe = onSnapshot(q, (snap) => {
+                const box = document.getElementById('messages');
+                box.innerHTML = '';
+                snap.forEach(d => {
+                    const m = d.data();
+                    const isMe = m.sender === auth.currentUser.uid;
+                    const time = m.timestamp ? new Date(m.timestamp.toDate()).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '';
                     
-                    msgWrapper.innerHTML = `
-                        ${!isMe ? `<img src="${data.photo}" class="w-7 h-7 rounded-full self-end mb-2">` : ''}
-                        <div class="msg-bubble ${isMe ? 'sent' : 'received'}">
-                            ${!isMe ? `<p class="text-[10px] font-bold text-indigo-300 mb-1">${data.name}</p>` : ''}
-                            ${msgContent}
-                            <p class="time">${time}</p>
+                    const div = document.createElement('div');
+                    div.className = `msg-bubble ${isMe ? 'sent' : 'received'}`;
+                    div.innerHTML = `
+                        ${!isMe ? `<p class="text-[10px] font-bold text-indigo-400 mb-1">${m.name}</p>` : ''}
+                        ${m.image ? `<img src="${m.image}" class="chat-img" onclick="window.open('${m.image}')">` : `<p class="text-sm">${m.text}</p>`}
+                        <div class="flex justify-between items-center gap-4 mt-1">
+                            <span class="time text-white/50">${time}</span>
                         </div>
                     `;
-                    messagesDiv.appendChild(msgWrapper);
+                    box.appendChild(div);
                 });
-                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                box.scrollTop = box.scrollHeight;
             });
         }
     </script>
